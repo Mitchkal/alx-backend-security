@@ -5,7 +5,8 @@ Basic ip logging middleware
 from ipware import get_client_ip
 from datetime import datetime
 import logging
-from .models import RequestLog
+from .models import RequestLog, BlockedIP
+from django.http import HttpResponseForbidden
 
 
 logger = logging.getLogger(__name__)
@@ -27,6 +28,7 @@ class IpMiddleware:
         Executed for each request
         """
         ip, _ = get_client_ip(request)
+
         timestamp = datetime.now()
         path = request.path
 
@@ -41,9 +43,12 @@ class IpMiddleware:
 
         # Log to database
         RequestLog.objects.create(
-                ip_address=ip or "0.0.0.0",
-                timestamp=timestamp,
-                path=path
+            ip_address=ip or "0.0.0.0",
+            timestamp=timestamp,
+            path=path
         )
+
+        if BlockedIp.objects.filter(ip_address=ip).exists():
+            return HttpResponseForbidden()
 
         return self.get_response(request)

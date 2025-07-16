@@ -8,3 +8,10 @@ class RequestLog(models.Model):
     ip_address = models.GenericIPAddressField()
     timestamp = models.DateTimeField()
     path = models.CharField(max_length=2048)
+
+
+class BlockedIP(models.Model):
+    """
+    Model for blocked ips
+    """
+    ip_address = models.GenericIPAddressField()
