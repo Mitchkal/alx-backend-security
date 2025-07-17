@@ -7,10 +7,15 @@ from datetime import datetime
 import logging
 from .models import RequestLog, BlockedIP
 from django.http import HttpResponseForbidden
+from ipgeolocation import IPGeolocation
+from django.core.cache import cache
 
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
+
+
+geo_locator = IPGeolocation()
 
 
 class IpMiddleware:
@@ -30,9 +35,6 @@ class IpMiddleware:
         """
         ip, _ = get_client_ip(request)
 
-        if ip == '127.0.0.1':
-            return None
-
         timestamp = datetime.now()
         path = request.path
         country_name = request.geolocation.country_name
@@ -40,10 +42,32 @@ class IpMiddleware:
         latitude = request.gelolocation.latitude
         longitude = request.geolocation.longitude
 
+        geo_data = {
+            "country": country_name,
+            "city": city_name,
+            "latitude": latitude,
+            "longitude": longitude,
+        }
+
         if BlockedIP.objects.filter(ip_address=ip).exists():
             return HttpResponseForbidden()
 
+        geo_cache_key = f"geo: {ip}"
+        geo_data = cache.get(geo_cache_key)
+
+        if not geo_data:
+            try:
+                geo_data = geo_locator.get_location(ip)
+                cache.set(geo_cache_key, geo_data, timeout=86400)
+            except Exception as e:
+                logger.warning(f"Geo lookup failed ffor ip {ip}: {e}")
+                geo_data = {}
         # prepare request info
+        country = geo_data.get("country_name")
+        city = geo_data.get("city_name")
+        latitude = geo_data.get("latitude")
+        longitude = geo_data.get("longitude")
+
         request_info = {
             "client_ip": ip,
             "request_timestamp": timestamp.isoformat(),
@@ -65,4 +89,5 @@ class IpMiddleware:
             country=country,
             city=city,
         )
+
         return self.get_response(request)
