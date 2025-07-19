@@ -30,8 +30,8 @@ class IpMiddleware:
         """
         ip, _ = get_client_ip(request)
 
-        if ip == '127.0.0.1':
-            return None
+        if ip == "127.0.0.1":
+            return self.get_response(request)
 
         timestamp = datetime.now()
         path = request.path
@@ -48,8 +48,8 @@ class IpMiddleware:
             "client_ip": ip,
             "request_timestamp": timestamp.isoformat(),
             "request_path": path,
-            "city": city,
-            "country": country,
+            "city": city_name,
+            "country": country_name,
             "longitude": longitude,
             "latitude": latitude,
         }
@@ -62,7 +62,7 @@ class IpMiddleware:
             ip_address=ip or "0.0.0.0",
             timestamp=timestamp,
             path=path,
-            country=country,
-            city=city,
+            country=country_name,
+            city=city_name,
         )
         return self.get_response(request)

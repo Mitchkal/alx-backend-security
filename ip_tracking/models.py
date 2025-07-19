@@ -17,3 +17,11 @@ class BlockedIP(models.Model):
     Model for blocked ips
     """
     ip_address = models.GenericIPAddressField()
+
+
+class SuspiciosIP(models.Model):
+    """
+    stores suspicios ip addresses and reason
+    """
+    ip_address = models.GenericIPAddressField()
+    reason = models.TextField()

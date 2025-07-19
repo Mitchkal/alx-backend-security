@@ -32,7 +32,7 @@ ALLOWED_HOSTS = []
 
 ENVIRONMENT = os.getenv("ENVIRONMENT", "development")
 IPINFO_TOKEN = os.getenv("IPINFO_TOKEN")
-IP_GEOLOCATION_BACKEND = 'django_ip_geolocation.backends.ipgeolocationapi'
+IP_GEOLOCATION_BACKEND = "django_ip_geolocation.backends.ipgeolocationapi"
 
 # Application definition
 
@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "ip_tracking",
     "cities_light",
     "django_ip_geolocation",
+    "django_celery_beat",
     # "ipinfo_django",
 ]
 
@@ -59,6 +60,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "django_ip_geolocation.middleware.IpGeolocationMiddleware",
     "ip_tracking.middleware.IpMiddleware",
+    "django_ratelimit.middleware.RatelimitMiddleware",
 ]
 
 ROOT_URLCONF = "alx_backend_security.urls"
